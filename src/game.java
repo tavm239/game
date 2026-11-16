@@ -81,7 +81,7 @@ public class game {
 
     public void placeCar(character2 car, int lane, double y, boolean visible) {
         car.lane = lane;
-        car.x = laneCenter(lane) - car.image.getWidth() / 2.0;
+        car.x = laneCenter(lane) - car.image.getWidth() / 2.0 + random.nextInt(101) - 50;
         car.y = y;
         car.isVisible = visible;
         car.passed = false;
@@ -100,9 +100,9 @@ public class game {
         if (second >= freeLane) second++;
         if (third >= freeLane) third++;
 
-        placeCar(a, first, y, true);
-        placeCar(b, second, y, carsInGroup >= 2);
-        placeCar(c, third, y, carsInGroup >= 3);
+        placeCar(a, first, y + random.nextInt(75), true);
+        placeCar(b, second, y + random.nextInt(75), carsInGroup >= 2);
+        placeCar(c, third, y + random.nextInt(75), carsInGroup >= 3);
     }
 
     public void update(double dt) {
@@ -155,7 +155,7 @@ public class game {
         if (pers5.y > height) newGroup(pers5, pers6, pers7, pers2.y - groupGap);
 
         Rectangle border = playerShape(false).getBounds();
-        if (border.x < 289 || border.x + border.width > 989) {
+        if (border.x < 220 || border.x + border.width > 1060) {
             finish("Столкновение с ограждением");
         }
         if (hits(pers2) || hits(pers3) || hits(pers4) ||
@@ -166,6 +166,7 @@ public class game {
 
     public void moveCar(character2 car, double step) {
         car.y += step;
+
         if (car.isVisible && !car.passed && car.y > pers.y + pers.image.getHeight()) {
             car.passed = true;
             overtakes++;
@@ -229,7 +230,7 @@ public class game {
         g.drawString("Машин в группе: " + carsInGroup, 25, 78);
         if (slideTime > 0 && Math.abs(sideSpeed) > 30) {
             g.setColor(new Color(185, 255, 90));
-            g.drawString("Занос: отпусти газ и выровняй машину", 350, 78);
+            g.drawString("", 350, 78);
         }
         g.drawImage(button1.image, button1.x, button1.y, null);
 
