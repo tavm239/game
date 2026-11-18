@@ -18,6 +18,8 @@ public class game {
     public pause button1 = new pause();
     public pause2 pausePanel = new pause2();
     public BufferedImage fon;
+    public BufferedImage restartImage;
+    public BufferedImage mainMenuImage;
     public Random random = new Random();
 
     public boolean left, right, gas, brake;
@@ -31,6 +33,8 @@ public class game {
     game() {
         try {
             fon = ImageIO.read(new File("src/fon.png"));
+            restartImage = ImageIO.read(new File("src/restart.png"));
+            mainMenuImage = ImageIO.read(new File("src/mainMenu.png"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -108,7 +112,7 @@ public class game {
     public void update(double dt) {
         if (paused || finished || dt <= 0) return;
 
-        if (dt > 0.05) dt = 0.05;         // При задержке окна не делаем огромный скачок за один кадр.
+        if (dt > 0.05) dt = 0.05;         // При задержке окна не делаем огромный скачок за один кадр
 
 
 
@@ -185,7 +189,6 @@ public class game {
 
     public boolean hits(character2 car) {
         if (!car.isVisible) return false;
-        // Немного уменьшаем прямоугольники, чтобы прозрачные края не мешали.
         Area body = playerShape(true);
         body.intersect(new Area(new Rectangle((int) car.x + 9, (int) car.y + 9,
                 car.image.getWidth() - 18, car.image.getHeight() - 18)));
@@ -234,14 +237,6 @@ public class game {
         }
         g.drawImage(button1.image, button1.x, button1.y, null);
 
-        g.setColor(new Color(12, 28, 44, 210));
-        g.fillRoundRect(15, 575, 250, 130, 16, 16);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 17));
-        g.drawString("A / D или ← / → — поворот", 27, 603);
-        g.drawString("W / ↑ — газ", 27, 630);
-        g.drawString("S / ↓ — тормоз", 27, 657);
-        g.drawString("Esc — пауза", 27, 684);
 
         if (paused || finished) {
             g.setColor(new Color(0, 0, 0, 150));
@@ -258,7 +253,7 @@ public class game {
 
     public void drawResult(Graphics2D g) {
         g.setColor(Color.WHITE);
-        g.fillRoundRect(384, 175, 512, 390, 20, 20);
+        g.fillRect(384, 175, 512, 390);
         g.setColor(new Color(20, 36, 50));
         g.setFont(new Font("Arial", Font.BOLD, 34));
         g.drawString("Авария", 580, 235);
@@ -266,13 +261,7 @@ public class game {
         g.drawString(crashReason, 425, 280);
         g.drawString("Расстояние: " + (int) distance + " м", 425, 325);
         g.drawString("Обгоны: " + overtakes, 425, 360);
-        g.setColor(new Color(185, 255, 90));
-        g.fillRoundRect(448, 405, 384, 50, 12, 12);
-        g.setColor(new Color(20, 36, 50));
-        g.setFont(new Font("Arial", Font.BOLD, 22));
-        g.drawString("Ещё заезд (R)", 555, 438);
-        g.fillRoundRect(448, 480, 384, 50, 12, 12);
-        g.setColor(Color.WHITE);
-        g.drawString("Главное меню", 557, 513);
+        g.drawImage(restartImage, 448, 405, null);
+        g.drawImage(mainMenuImage, 448, 480, null);
     }
 }

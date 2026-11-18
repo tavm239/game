@@ -47,12 +47,8 @@ public class menu extends JFrame {
             }
             else if (onButton(button4.image, button4.x, button4.y, e)) dispose();
             else if (onButton(button2.image, button2.x, button2.y, e)) {
-                JOptionPane.showMessageDialog(menu.this,
-                        "A / D или стрелки влево / вправо — поворот\n"
-                        + "W / стрелка вверх — газ\nS / стрелка вниз — тормоз\n"
-                        + "Esc — пауза\nR — новый заезд после аварии\n\n"
-                        + "На высокой скорости поворачивай короткими нажатиями.",
-                        "Управление", JOptionPane.INFORMATION_MESSAGE);
+                new control2();
+                dispose();
             }
         }
 
