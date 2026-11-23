@@ -20,6 +20,8 @@ public class game {
     public BufferedImage fon;
     public BufferedImage restartImage;
     public BufferedImage mainMenuImage;
+    public BufferedImage roadSign1;
+    public BufferedImage roadSign2;
     public Random random = new Random();
 
     public boolean left, right, gas, brake;
@@ -35,6 +37,10 @@ public class game {
             fon = ImageIO.read(new File("src/fon.png"));
             restartImage = ImageIO.read(new File("src/restart.png"));
             mainMenuImage = ImageIO.read(new File("src/mainMenu.png"));
+            roadSign1 = ImageIO.read(new File("src/sign100.png"));
+            roadSign2 = ImageIO.read(new File("src/sign120.png"));
+
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -121,7 +127,7 @@ public class game {
         else if (speed < 80) speed = Math.min(80, speed + 12 * dt);
         else if (speed > 80) speed = Math.max(80, speed - 8 * dt);
         if (speed < 0) speed = 0;
-        if (speed > 180) speed = 180;
+        if (speed > 200) speed = 200;
 
         int turn = 0;
         if (left && !right) turn = -1;
@@ -209,6 +215,9 @@ public class game {
         int y = (int) roadY;
         g.drawImage(fon, 0, y, null);
         g.drawImage(fon, 0, y - height, null);
+
+
+
         drawCar(g, pers2);
         drawCar(g, pers3);
         drawCar(g, pers4);
