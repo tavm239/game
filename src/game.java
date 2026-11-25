@@ -20,6 +20,11 @@ public class game {
     public BufferedImage fon;
     public BufferedImage restartImage;
     public BufferedImage mainMenuImage;
+    public BufferedImage roadSign1;
+    public BufferedImage roadSign2;
+    public BufferedImage roadSignEnd1;
+    public BufferedImage roadSignEnd2;
+    public BufferedImage signBeam;
     public Random random = new Random();
 
     public boolean left, right, gas, brake;
@@ -30,11 +35,25 @@ public class game {
     public int groupGap = 850;
     public String crashReason;
 
+    public int speedLimit, signLimit;
+    public int signX = 592, signSize = 96; // Знак по центру дороги
+    public double signY, signTimer, nextSignTime;
+    public boolean signVisible, signPassed;
+    public double limitTime;
+    public boolean cancelSign;
+
     game() {
         try {
             fon = ImageIO.read(new File("src/fon.png"));
             restartImage = ImageIO.read(new File("src/restart.png"));
             mainMenuImage = ImageIO.read(new File("src/mainMenu.png"));
+            roadSign1 = ImageIO.read(new File("src/sign100.png"));
+            roadSign2 = ImageIO.read(new File("src/sign120.png"));
+            roadSignEnd1 = ImageIO.read(new File("src/signEnd100.png"));
+            roadSignEnd2 = ImageIO.read(new File("src/signEnd120.png"));
+            signBeam = ImageIO.read(new File("src/signBeam.png"));
+
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -57,6 +76,15 @@ public class game {
         paused = false;
         finished = false;
         crashReason = "";
+        speedLimit = 0;       // До первого знака ограничения нет
+        signLimit = 100;
+        signY = -signSize;
+        signTimer = 0;
+        nextSignTime = 12;
+        signVisible = false;
+        signPassed = false;
+        limitTime = 0;
+        cancelSign = false;
         releaseKeys();
         newGroup(pers2, pers3, pers4, -160);
         newGroup(pers5, pers6, pers7, -160 - groupGap);
@@ -121,7 +149,7 @@ public class game {
         else if (speed < 80) speed = Math.min(80, speed + 12 * dt);
         else if (speed > 80) speed = Math.max(80, speed - 8 * dt);
         if (speed < 0) speed = 0;
-        if (speed > 180) speed = 180;
+        if (speed > 200) speed = 200;
 
         int turn = 0;
         if (left && !right) turn = -1;
@@ -147,6 +175,7 @@ public class game {
         if (distance >= 500) carsInGroup = 3;
 
         roadY = (roadY + speed / 3.6 * 12 * dt) % height;
+        updateSigns(dt);
         double step = speed / 3.6 * 6 * dt;
         moveCar(pers2, step);
         moveCar(pers3, step);
@@ -166,6 +195,57 @@ public class game {
                 hits(pers5) || hits(pers6) || hits(pers7)) {
             finish("Столкновение с автомобилем");
         }
+    }
+
+    public void showSign(boolean cancel) {
+        cancelSign = cancel;
+        if (!cancel) {
+            if (random.nextInt(2) == 0) signLimit = 100;
+            else signLimit = 120;
+        }
+        signY = -signSize;
+        signVisible = true;
+        signPassed = false;
+    }
+
+    public void updateSigns(double dt) {
+        if (speedLimit > 0 && !cancelSign) {
+            limitTime += dt;
+            // Через 5 секунд после проезда появляется знак отмены
+            if (limitTime >= 5 && (!signVisible || signPassed)) showSign(true);
+        }
+        else if (speedLimit == 0) {
+            signTimer += dt;
+            if (!signVisible && signTimer >= nextSignTime) {
+                showSign(false);
+                signTimer = 0;
+            }
+        }
+
+        if (signVisible) {
+            signY += speed / 3.6 * 12 * dt;
+
+            // Ограничение включается, когда машина проезжает под перекладиной со знаком
+            if (!signPassed && signY + signSize / 2.0 >= pers.y + pers.image.getHeight() / 2.0) {
+                if (cancelSign) {
+                    speedLimit = 0;
+                    limitTime = 0;
+                    signTimer = 0;
+                    nextSignTime = 20 + random.nextInt(11); // До следующего участка 20–30 секунд
+                }
+                else {
+                    speedLimit = signLimit;
+                    limitTime = 0;
+                }
+                signPassed = true;
+            }
+
+            if (signY > height) signVisible = false;
+        }
+    }
+
+    public boolean speedExceeded() {
+        return speedLimit > 0 && speed > speedLimit;
     }
 
     public void moveCar(character2 car, double step) {
@@ -209,6 +289,7 @@ public class game {
         int y = (int) roadY;
         g.drawImage(fon, 0, y, null);
         g.drawImage(fon, 0, y - height, null);
+
         drawCar(g, pers2);
         drawCar(g, pers3);
         drawCar(g, pers4);
@@ -222,6 +303,8 @@ public class game {
         carGraphics.drawImage(pers.image, (int) pers.x, (int) pers.y, null);
         carGraphics.dispose();
 
+        drawSign(g); // Конструкция над дорогой рисуется поверх машин
+
         g.setColor(new Color(12, 28, 44, 220));
         g.fillRect(0, 0, width, 100);
         g.setColor(Color.WHITE);
@@ -231,6 +314,13 @@ public class game {
         g.drawString("Обгоны: " + overtakes, 760, 40);
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         g.drawString("Машин в группе: " + carsInGroup, 25, 78);
+        if (speedLimit == 0) g.drawString("Ограничение: нет", 350, 78);
+        else g.drawString("Ограничение: " + speedLimit + " км/ч", 350, 78);
+        if (speedExceeded()) {
+            g.setColor(new Color(255, 100, 100));
+            g.setFont(new Font("Arial", Font.BOLD, 18));
+            g.drawString("Превышение скорости!", 720, 78);
+        }
         if (slideTime > 0 && Math.abs(sideSpeed) > 30) {
             g.setColor(new Color(185, 255, 90));
             g.drawString("", 350, 78);
@@ -245,6 +335,20 @@ public class game {
         if (paused && !finished) g.drawImage(pausePanel.image, pausePanel.x, pausePanel.y, null);
         if (finished) drawResult(g);
         g.dispose();
+    }
+
+    public void drawSign(Graphics2D g) {
+        if (!signVisible) return;
+        int y = (int) signY;
+        g.drawImage(signBeam, 196, y, null);
+        if (cancelSign) {
+            if (signLimit == 100) g.drawImage(roadSignEnd1, signX, y, signSize, signSize, null);
+            else g.drawImage(roadSignEnd2, signX, y, signSize, signSize, null);
+        }
+        else {
+            if (signLimit == 100) g.drawImage(roadSign1, signX, y, signSize, signSize, null);
+            else g.drawImage(roadSign2, signX, y, signSize, signSize, null);
+        }
     }
 
     public void drawCar(Graphics2D g, character2 car) {

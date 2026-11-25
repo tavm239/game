@@ -35,7 +35,6 @@ public class test2 extends JFrame {
             }
             if (race.paused || race.finished) return;
 
-            // Запоминаем нажатие. Таймер двигает машину, пока кнопка зажата.
             if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) race.left = true;
             if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) race.right = true;
             if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) race.gas = true;
@@ -88,7 +87,6 @@ public class test2 extends JFrame {
         setTitle("На грани сцепления");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
-        // Размер игрового поля без рамки окна.
         pole.setPreferredSize(new Dimension(1280, 720));
         pole.setFocusable(true);
         pole.addKeyListener(kl);
@@ -112,7 +110,6 @@ public class test2 extends JFrame {
             }
         });
 
-        // Таймер не блокирует мышь и клавиатуру, в отличие от while.
         lastTime = System.nanoTime();
         timer = new Timer(20, e -> {
             long now = System.nanoTime();
